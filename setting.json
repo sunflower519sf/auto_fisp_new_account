@@ -1,0 +1,7 @@
+{
+    "teacher_mail":"老師帳號",
+    "user_name":"名字",
+    "user_password":"密碼",
+    "範例auto_exam_data":["學號", "姓名", "座號", "密碼"],
+    "auto_exam_data":["", "", "", ""]
+}
