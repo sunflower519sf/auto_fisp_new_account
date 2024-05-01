@@ -86,11 +86,11 @@ for window_handle in all_window_handles:
         break
 # 提取題目+答案
 question_original_data = driver.find_elements(by=By.CLASS_NAME, value="incorrect")
-ans_original_data = driver.find_elements(by=By.CLASS_NAME, value="correctAnser")
 all_original_and_ans = []
-for data in range(len(question_original_data)):
-    question_text = question_original_data[data].find_elements(by=By.TAG_NAME, value="td")[3].text.split("\n")
-    ans_out = question_text[1].split()[options_convert_number(ans_original_data[data].text)][3:]
+for data in question_original_data:
+    ans_original_data = data.find_element(by=By.CLASS_NAME, value="correctAnser")
+    question_text = data.find_elements(by=By.TAG_NAME, value="td")[3].text.split("\n")
+    ans_out = question_text[1].split()[options_convert_number(ans_original_data.text)][3:]
     all_original_and_ans.append([question_text[0], ans_out])
 # print(all_original_and_ans)
 # 返回頁面
@@ -134,20 +134,39 @@ ssid_login.click()
 enter_exam = driver.find_elements(by=By.NAME, value="button")
 enter_exam[exam_number].click()
 # 取得題目和選項按鈕
+time.sleep(0.1)
 question_original_data = driver.find_element(by=By.CLASS_NAME, value="question")
 question_original_rows = question_original_data.find_elements(By.CSS_SELECTOR, value="tr[valign='top']")
 
-choose_list = []
+run_error_num = 0
 for data in question_original_rows:
-    question_text_all = data.find_elements(by=By.TAG_NAME, value="td")[2].text.split("\n")
+    
+    # 抓取題目
+    answer_pos = data.find_elements(by=By.TAG_NAME, value="td")
+    question_text_all = answer_pos[2].text.split("\n")
+    # 題目取得答案
     end_ans = question_search_ans(all_original_and_ans, question_text_all[0])
-    options_list = question_text_all[1].split()
-    option_num = options_list.index(end_ans) # 1 3 5 7
-    option_choose = option_num_convert(option_num)
-    choose_list.append(option_choose)
+    # 取得選項
+    options_txt_list = answer_pos[2].find_elements(by=By.CLASS_NAME, value="content")
+    options_txt = [data.text for data in options_txt_list]
+    for option_data in options_txt:
+        if end_ans in option_data:
+            option_choose = options_txt.index(option_data)
+            break
+    else:
+        print("查無資料")
 
-option_ans_data = driver.find_elements(by=By.CLASS_NAME, value="radio-options")
-for data in range(len(option_ans_data)):
-    option_click = option_ans_data[data].find_elements(by=By.TAG_NAME, value="label")[choose_list[data]]
-    option_click.click()
-input()
+    # 點擊選項
+    options_fill = answer_pos[1].find_elements(by=By.CSS_SELECTOR, value=f"label")[option_choose]
+    options_fill.click()
+    print(question_text_all[0], end_ans)
+
+input("點擊ENTER交卷繼續")
+# 交卷
+exam_submit = driver.find_element(by=By.NAME, value="Submit")
+exam_submit .click()
+# 點擊彈出提示框
+alert = driver.switch_to.alert
+alert.accept()
+
+input("您可以使用ctrl+c結束或按下ENTER結束")
