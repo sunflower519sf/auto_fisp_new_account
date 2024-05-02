@@ -14,11 +14,23 @@ def options_convert_number(options_str):
         case "B": return 1
         case "C": return 2
         case "D": return 3
-def question_search_ans(all_original_and_ans, question):
+def question_search_ans(all_original_and_ans, question, choose_id):
+    question_check = True
+    question_str = ""
     for question_ans in all_original_and_ans:
-        if question in question_ans[0]:
-            return question_ans[1]
-    print("查無此題")
+        # if question in question_ans[0]:
+        #     if question_check:
+        #         question_str = question_ans[1]
+        #         question_check = False
+        #     else:
+        original_id = question_ans[2]
+        if choose_id == original_id:
+            question_str = question_ans[1]
+            return question_str
+        # else:
+        #     question_str = ""
+        # print("重複題目")
+    
 def option_num_convert(option_num):
     match option_num:
         case 1: return 0
@@ -101,7 +113,7 @@ for data in question_original_data:
     ans_original_data = data.find_element(by=By.CLASS_NAME, value="correctAnser")
     question_text = data.find_elements(by=By.TAG_NAME, value="td")[3].text.split(f" = {ans_original_data.text})\n")
     ans_out =segmentation_ans(question_text[1])[options_convert_number(ans_original_data.text)]
-    all_original_and_ans.append([question_text[0], ans_out])
+    all_original_and_ans.append([question_text[0], ans_out, question_text[0].rsplit("(")[1]])
 # print(all_original_and_ans)
 # 返回頁面
 driver.get("https://qe.fisp.com.tw/ep/login_stu.php") 
@@ -156,7 +168,9 @@ for data in question_original_rows:
     answer_pos = data.find_elements(by=By.TAG_NAME, value="td")
     question_text_all = answer_pos[2].text.split("\n")
     # 題目取得答案
-    end_ans = question_search_ans(all_original_and_ans, question_text_all[0])
+    options_choose = answer_pos[1].find_elements(by=By.CSS_SELECTOR, value=f"label")
+    choose_id = options_choose[0].find_elements(by=By.TAG_NAME, value="input")[0].get_attribute("data-id")
+    end_ans = question_search_ans(all_original_and_ans, question_text_all[0], choose_id)
     # 取得選項
     options_txt_list = answer_pos[2].find_elements(by=By.CLASS_NAME, value="content")
     options_txt = [data.text for data in options_txt_list]
@@ -168,11 +182,11 @@ for data in question_original_rows:
         print("查無資料")
 
     # 點擊選項
-    options_fill = answer_pos[1].find_elements(by=By.CSS_SELECTOR, value=f"label")[option_choose]
+    options_fill = options_choose[option_choose]
     options_fill.click()
     print(question_text_all[0], end_ans)
 
-# input("點擊ENTER交卷繼續")
+input("點擊ENTER交卷繼續")
 # 交卷
 exam_submit = driver.find_element(by=By.NAME, value="Submit")
 exam_submit .click()
