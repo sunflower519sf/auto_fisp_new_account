@@ -25,9 +25,18 @@ def option_num_convert(option_num):
         case 3: return 1
         case 5: return 2
         case 7: return 3
+def segmentation_ans(ans:str):
+    ans_original_a = ans.split(" (B)")
+    ans_a = ans_original_a[0][3:]
+    ans_original_b = ans_original_a[1].split(" (C)")
+    ans_b = ans_original_b[0]
+    ans_original_c = ans_original_b[1].split(" (D)")
+    ans_c = ans_original_c[0]
+    ans_d = ans_original_c[1]
+    return [ans_a, ans_b, ans_c, ans_d]
 chrome_driver_path = "./chromedriver.exe" # 在此輸入chrome driver路徑
-# driver = webdriver.Chrome()
-driver = webdriver.Chrome(chrome_driver_path) # 不想手動下載chrome driver 可用上方程式 不過可能出現錯誤
+driver = webdriver.Chrome()
+# driver = webdriver.Chrome(chrome_driver_path) # 不想手動下載chrome driver 可用上方程式 不過可能出現錯誤
 driver.get("https://qe.fisp.com.tw/ep/login_stu.php")
 
 # 紀錄窗口句柄 切換頁面需要
@@ -76,7 +85,7 @@ exam_look_ans = driver.find_element(by=By.CLASS_NAME, value="alink")
 exam_look_ans .click()
 # 取得答案 並存入變數
 time.sleep(1)
-all_window_handles = driver.window_handles
+all_window_handles = driver.window_handles # driver定位到新頁面
 
 # 遍歷所有窗口 找到新窗口
 for window_handle in all_window_handles:
@@ -85,12 +94,13 @@ for window_handle in all_window_handles:
         driver.switch_to.window(window_handle)
         break
 # 提取題目+答案
+time.sleep(1)
 question_original_data = driver.find_elements(by=By.CLASS_NAME, value="incorrect")
 all_original_and_ans = []
 for data in question_original_data:
     ans_original_data = data.find_element(by=By.CLASS_NAME, value="correctAnser")
-    question_text = data.find_elements(by=By.TAG_NAME, value="td")[3].text.split("\n")
-    ans_out = question_text[1].split()[options_convert_number(ans_original_data.text)][3:]
+    question_text = data.find_elements(by=By.TAG_NAME, value="td")[3].text.split(f" = {ans_original_data.text})\n")
+    ans_out =segmentation_ans(question_text[1])[options_convert_number(ans_original_data.text)]
     all_original_and_ans.append([question_text[0], ans_out])
 # print(all_original_and_ans)
 # 返回頁面
@@ -100,6 +110,7 @@ ssid_logout = driver.find_element(by=By.CLASS_NAME, value="logout")
 ssid_logout.click()
 ssid_login = driver.find_element(by=By.NAME, value="Submit")
 ssid_login.click()
+
 
 # 開始作答
 # 重新登錄作答帳號
@@ -161,7 +172,7 @@ for data in question_original_rows:
     options_fill.click()
     print(question_text_all[0], end_ans)
 
-input("點擊ENTER交卷繼續")
+# input("點擊ENTER交卷繼續")
 # 交卷
 exam_submit = driver.find_element(by=By.NAME, value="Submit")
 exam_submit .click()
