@@ -70,7 +70,7 @@ ssid_name = driver.find_element(by=By.ID, value="s_name")
 ssid_no = driver.find_element(by=By.ID, value="s_no")
 ssid_login = driver.find_element(by=By.NAME, value="Submit")
 ssid_num.send_keys(f"149331")
-ssid_name.send_keys("曾宇皓")
+ssid_name.send_keys("xxx")
 ssid_no.send_keys("31")
 ssid_login.click()
 # 確認資料
